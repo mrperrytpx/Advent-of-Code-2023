@@ -26,9 +26,7 @@ const pattern = new RegExp(
 for (let str of file) {
     let newStr = "";
 
-    const matchedWords = [
-        ...str.matchAll(pattern, (match) => numsInLetters[match]),
-    ];
+    const matchedWords = [...str.matchAll(pattern)];
 
     if (matchedWords.length) {
         newStr += str.slice(0, matchedWords[0].index);
