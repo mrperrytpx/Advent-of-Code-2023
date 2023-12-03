@@ -31,6 +31,7 @@ for (let i = 0; i < file.length; i++) {
         if (isSymbol) {
             for (let k = -1; k <= 1; k++) {
                 const unique = new Set();
+                // will not work if a row looks like .......185*185....
 
                 for (let m = -1; m <= 1; m++) {
                     const neighbour = file[i + k][j + m];
