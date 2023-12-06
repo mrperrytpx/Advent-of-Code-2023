@@ -1,5 +1,6 @@
 const readFile = require("fs").readFileSync;
-const file = readFile(__dirname + "/example.txt", "utf-8")
+const writeFile = require("fs").writeFileSync;
+const file = readFile(__dirname + "/input.txt", "utf-8")
     .replace(/\r/g, "")
     .split("\n\n");
 
@@ -52,34 +53,21 @@ function getOverlappingPairs(pair, checkAgainstPair) {
     return overlappingPairs;
 }
 
-// console.log(
-//     isFullOverlapping(
-//         [3721480891, 3725417804],
-//         [3699707734, 3699707734 + 285474938]
-//     )
-// );
-
 let minLoc = [];
 
 for (let i = 0; i < seeds.length; i += 2) {
     let startingPairs = [[+seeds[i], +seeds[i] + (+seeds[i + 1] - 1)]];
     let lastIdx = 0;
 
-    // console.log("new seed", startingPairs, "____________________");
-
     while (startingPairs.length) {
         let currPair = startingPairs.shift();
         let shouldBreak = false;
 
-        for (let mapIdx = lastIdx; mapIdx < maps.length; mapIdx++) {
+        for (let mapIdx = lastIdx ?? 0; mapIdx < maps.length; mapIdx++) {
             let currMap = maps[mapIdx];
-            // console.log("New map", mapIdx, "currPair", currPair);
-            // console.log("currMap", currMap);
 
             for (let range = 0; range < currMap.length; range++) {
                 let vals = currMap[range];
-
-                // console.log("Checking against", vals);
 
                 let checkAgainstPair = [+vals[1], +vals[1] + (+vals[2] - 1)];
 
@@ -91,34 +79,29 @@ for (let i = 0; i < seeds.length; i += 2) {
                 if (isFullOverlap) {
                     currPair[0] += +vals[0] - +vals[1];
                     currPair[1] += +vals[0] - +vals[1];
-                    // console.log("New range values:", currPair);
                     break;
                 }
                 let newPairs = getOverlappingPairs(currPair, checkAgainstPair);
 
                 if (newPairs.length) {
                     startingPairs.push(...newPairs);
-                    // console.log("Breaking loop with new pairs", startingPairs);
                     shouldBreak = true;
+
                     break;
                 }
-
-                // console.log("No ranges in current map");
             }
 
             if (shouldBreak) {
                 lastIdx = mapIdx;
-                // console.log("Next loop should start at index", mapIdx);
+
                 break;
             }
 
             if (mapIdx === maps.length - 1) {
-                // console.log("Final location value ranges:", currPair);
                 minLoc.push(currPair);
             }
         }
     }
-    // break;
 }
 
 // solution = 78775051
