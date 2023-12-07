@@ -1,6 +1,5 @@
 const readFile = require("fs").readFileSync;
-const writeFile = require("fs").writeFileSync;
-const file = readFile(__dirname + "/input.txt", "utf-8")
+const file = readFile(__dirname + "/example.txt", "utf-8")
     .replace(/\r/g, "")
     .split("\n\n");
 
@@ -58,14 +57,12 @@ let minLoc = [];
 for (let i = 0; i < seeds.length; i += 2) {
     let startingPairs = [[+seeds[i], +seeds[i] + (+seeds[i + 1] - 1)]];
     let lastIdx = 0;
-
     while (startingPairs.length) {
         let currPair = startingPairs.shift();
         let shouldBreak = false;
 
-        for (let mapIdx = lastIdx ?? 0; mapIdx < maps.length; mapIdx++) {
+        for (let mapIdx = lastIdx; mapIdx < maps.length; mapIdx++) {
             let currMap = maps[mapIdx];
-
             for (let range = 0; range < currMap.length; range++) {
                 let vals = currMap[range];
 
@@ -86,19 +83,12 @@ for (let i = 0; i < seeds.length; i += 2) {
                 if (newPairs.length) {
                     startingPairs.push(...newPairs);
                     shouldBreak = true;
-
                     break;
                 }
             }
-
             if (shouldBreak) {
                 lastIdx = mapIdx;
-
                 break;
-            }
-
-            if (mapIdx === maps.length - 1) {
-                minLoc.push(currPair);
             }
         }
     }
