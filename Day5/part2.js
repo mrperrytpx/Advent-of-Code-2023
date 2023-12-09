@@ -1,5 +1,5 @@
 const readFile = require("fs").readFileSync;
-const file = readFile(__dirname + "/example.txt", "utf-8")
+const file = readFile(__dirname + "/input.txt", "utf-8")
     .replace(/\r/g, "")
     .split("\n\n");
 
@@ -52,52 +52,61 @@ function getOverlappingPairs(pair, checkAgainstPair) {
     return overlappingPairs;
 }
 
-let minLoc = [];
+let minLoc = Infinity;
 
 for (let i = 0; i < seeds.length; i += 2) {
-    let startingPairs = [[+seeds[i], +seeds[i] + (+seeds[i + 1] - 1)]];
-    let lastIdx = 0;
-    while (startingPairs.length) {
-        let currPair = startingPairs.shift();
-        let shouldBreak = false;
+    let seedRanges = [[+seeds[i], +seeds[i] + (+seeds[i + 1] - 1)]];
 
-        for (let mapIdx = lastIdx; mapIdx < maps.length; mapIdx++) {
-            let currMap = maps[mapIdx];
-            for (let range = 0; range < currMap.length; range++) {
-                let vals = currMap[range];
-
-                let checkAgainstPair = [+vals[1], +vals[1] + (+vals[2] - 1)];
-
-                let isFullOverlap = isFullOverlapping(
-                    currPair,
-                    checkAgainstPair
-                );
-
+    for (let map of maps) {
+        for (let j = 0; j < seedRanges.length; j++) {
+            let pair = seedRanges[j];
+            for (let range of map) {
+                let checkAgainstPair = [+range[1], +range[1] + (+range[2] - 1)];
+                let isFullOverlap = isFullOverlapping(pair, checkAgainstPair);
                 if (isFullOverlap) {
-                    currPair[0] += +vals[0] - +vals[1];
-                    currPair[1] += +vals[0] - +vals[1];
+                    pair[0] += +range[0] - +range[1];
+                    pair[1] += +range[0] - +range[1];
                     break;
                 }
-                let newPairs = getOverlappingPairs(currPair, checkAgainstPair);
+                let newPairs = getOverlappingPairs(pair, checkAgainstPair);
 
                 if (newPairs.length) {
-                    startingPairs.push(...newPairs);
-                    shouldBreak = true;
+                    switch (newPairs.length) {
+                        case 3: {
+                            seedRanges.push(newPairs[0]);
+                            seedRanges.push(newPairs[2]);
+                            newPairs[1][0] += +range[0] - +range[1];
+                            newPairs[1][1] += +range[0] - +range[1];
+                            seedRanges[j] = newPairs[1];
+                            break;
+                        }
+                        case 2: {
+                            for (let partial of newPairs) {
+                                const isItOverlapping = isFullOverlapping(
+                                    partial,
+                                    checkAgainstPair
+                                );
+                                if (isItOverlapping) {
+                                    partial[0] += +range[0] - +range[1];
+                                    partial[1] += +range[0] - +range[1];
+                                    seedRanges[j] = partial;
+                                } else {
+                                    seedRanges.push(partial);
+                                }
+                            }
+                            break;
+                        }
+                        default: {
+                            break;
+                        }
+                    }
                     break;
                 }
-            }
-            if (shouldBreak) {
-                lastIdx = mapIdx;
-                break;
             }
         }
     }
+    const minSeedRange = seedRanges.sort((a, b) => a[0] - b[0])[0][0];
+    if (minSeedRange < minLoc) minLoc = minSeedRange;
 }
 
-// solution = 78775051
-// IT'S HIDING IN THE ARRAY
-
-console.log(
-    "location ranges",
-    minLoc.sort((a, b) => a[0] - b[0])
-);
+console.log(minLoc);
