@@ -70,34 +70,18 @@ for (let i = 0; i < seeds.length; i += 2) {
                 }
                 let newPairs = getOverlappingPairs(pair, checkAgainstPair);
 
-                if (newPairs.length) {
-                    switch (newPairs.length) {
-                        case 3: {
-                            seedRanges.push(newPairs[0]);
-                            seedRanges.push(newPairs[2]);
-                            newPairs[1][0] += +range[0] - +range[1];
-                            newPairs[1][1] += +range[0] - +range[1];
-                            seedRanges[j] = newPairs[1];
-                            break;
-                        }
-                        case 2: {
-                            for (let partial of newPairs) {
-                                const isItOverlapping = isFullOverlapping(
-                                    partial,
-                                    checkAgainstPair
-                                );
-                                if (isItOverlapping) {
-                                    partial[0] += +range[0] - +range[1];
-                                    partial[1] += +range[0] - +range[1];
-                                    seedRanges[j] = partial;
-                                } else {
-                                    seedRanges.push(partial);
-                                }
-                            }
-                            break;
-                        }
-                        default: {
-                            break;
+                if (newPairs.length >= 2) {
+                    for (let partial of newPairs) {
+                        const isItOverlapping = isFullOverlapping(
+                            partial,
+                            checkAgainstPair
+                        );
+                        if (isItOverlapping) {
+                            partial[0] += +range[0] - +range[1];
+                            partial[1] += +range[0] - +range[1];
+                            seedRanges[j] = partial;
+                        } else {
+                            seedRanges.push(partial);
                         }
                     }
                     break;
