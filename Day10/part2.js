@@ -1,32 +1,27 @@
-const readFile = require("fs").readFileSync;
-
-const REMAP = {
-    "|": "│",
-    "-": "─",
-    L: "└",
-    J: "┘",
-    7: "┐",
-    F: "┌",
-    ".": ".",
-    S: "*",
+String.prototype.replaceAt = function (index, replacement) {
+    return (
+        this.substring(0, index) +
+        replacement +
+        this.substring(index + replacement.length)
+    );
 };
 
-let startingCoords = [];
+const readFile = require("fs").readFileSync;
 
+let startingCoords = [];
 const file = readFile(__dirname + "/input.txt", "utf-8")
     .replace(/\r/g, "")
     .split("\n")
-    .map((x, i) =>
-        x
-            .split("")
-            .map((y, j) => {
-                if (y === "S") {
-                    startingCoords = [i, j];
-                }
-                return REMAP[y];
-            })
-            .join("")
-    );
+    .filter((_) => _.trim());
+
+file.forEach((x, i) => {
+    x.split("").forEach((y, j) => {
+        if (y === "S") {
+            startingCoords = [i, j];
+            return;
+        }
+    });
+});
 
 function determineDirection(prevPipe, currPipe) {
     let newPair = [currPipe[0] - prevPipe[0], currPipe[1] - prevPipe[1]];
@@ -48,25 +43,23 @@ function determineDirection(prevPipe, currPipe) {
 }
 
 const VALID_PATHS_MAP = {
-    "from-left-─": [0, 1],
-    "from-right-─": [0, -1],
-    "from-down-│": [-1, 0],
-    "from-up-│": [1, 0],
-    "from-left-┐": [1, 0],
-    "from-down-┐": [0, -1],
-    "from-right-┌": [1, 0],
-    "from-down-┌": [0, 1],
-    "from-left-┘": [-1, 0],
-    "from-up-┘": [0, -1],
-    "from-up-└": [0, 1],
-    "from-right-└": [-1, 0],
+    "from-left--": [0, 1],
+    "from-right--": [0, -1],
+    "from-down-|": [-1, 0],
+    "from-up-|": [1, 0],
+    "from-left-7": [1, 0],
+    "from-down-7": [0, -1],
+    "from-right-F": [1, 0],
+    "from-down-F": [0, 1],
+    "from-left-J": [-1, 0],
+    "from-up-J": [0, -1],
+    "from-up-L": [0, 1],
+    "from-right-L": [-1, 0],
 };
 
 let prevPipe = [...startingCoords];
 let currPipe = [17, 104];
-let allLoopCoords = [startingCoords];
-
-console.log(startingCoords);
+let allLoopCoords = [startingCoords.toString()];
 
 while (currPipe.toString() !== startingCoords.toString()) {
     const prevDirection = determineDirection(prevPipe, currPipe);
@@ -76,53 +69,37 @@ while (currPipe.toString() !== startingCoords.toString()) {
         currPipe[0] + nextDirectionVal[0],
         currPipe[1] + nextDirectionVal[1],
     ];
-    allLoopCoords.push(currPipe);
+    allLoopCoords.push(currPipe.toString());
 
     prevPipe = currPipe;
     currPipe = nextPipe;
 }
 
-let minRow = Infinity;
-let minCol = Infinity;
-let maxRow = 0;
-let maxCol = 0;
-allLoopCoords = allLoopCoords
-    .sort((a, b) => {
-        if (a[0] === b[0]) return a[1] - b[1];
-        return a[0] - b[0];
-    })
-    .map((x) => {
-        if (x[0] < minRow) minRow = x[0];
-        if (x[0] > maxRow) maxRow = x[0];
-        if (x[1] < minCol) minCol = x[1];
-        if (x[1] > maxCol) maxCol = x[1];
-        return x.toString();
-    });
+let validWalls = ["|", "J", "L"];
 
-// console.log(minRow, maxRow, minCol, maxCol);
-// console.log(allLoopCoords);
+file[startingCoords[0]] = file[startingCoords[0]].replaceAt(
+    startingCoords[1],
+    "|"
+);
 
-let validWalls = ["│", "┘", "└"];
-
-let FUCK = 0;
+let tilesInLoop = 0;
 for (let i = 0; i < file.length; i++) {
     for (let j = 0; j < file[0].length; j++) {
         if (allLoopCoords.includes([i, j].toString())) continue;
 
         let countCrossed = 0;
-        for (let m = j; m <= maxCol; m++) {
+        for (let m = j; m <= file[0].length; m++) {
             if (
-                allLoopCoords.includes([i + 1, m].toString()) &&
-                validWalls.includes(file[i + 1][m])
+                allLoopCoords.includes([i, m].toString()) &&
+                validWalls.includes(file[i][m])
             ) {
                 countCrossed++;
             }
         }
 
         if (countCrossed % 2 === 0) continue;
-
-        FUCK += 1;
+        tilesInLoop += 1;
     }
 }
 
-console.log(FUCK);
+console.log(tilesInLoop);
