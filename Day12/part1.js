@@ -1,42 +1,46 @@
 const readFile = require("fs").readFileSync;
-const file = readFile(__dirname + "/example.txt", "utf-8")
+const file = readFile(__dirname + "/input.txt", "utf-8")
     .replace(/\r/g, "")
     .split("\n")
     .filter((_) => _.trim());
 
+let numOfArrangements = 0;
+
 for (const line of file) {
     let [map, vals] = line.split(" ");
-    vals = vals.split(",").map(Number);
+    vals = vals.split(",");
 
-    const maxSigns = vals.reduce((a, b) => a + b, 0);
-    const missingSigns =
-        maxSigns - (map.match(new RegExp("#", "g")) || []).length;
-    map = map.split("");
+    const results = generatePermutations(map, 0, []);
 
-    let poss = 0;
-    for (let i = 0; i < missingSigns; i++) {
-        for (let j = 1 + i; j < map.length; j++) {
-            let mapCopy = [...map];
+    for (let r of results) {
+        let pairsOfHsh = r.match(new RegExp("#+", "g"));
+        let pairsOfAshAsNum = pairsOfHsh?.map((x) => x.length);
+        if (pairsOfAshAsNum?.toString() === vals.toString()) {
+            numOfArrangements++;
+        }
+    }
+}
 
-            mapCopy[i] = "#";
-            mapCopy[j] = "#";
+console.log(numOfArrangements);
 
-            mapCopy = mapCopy.map((x) => {
-                if (x === "?") return ".";
-                return x;
-            });
+function generatePermutations(str) {
+    const result = [];
 
-            const matches = mapCopy.join("").match(/#+/g);
-            if (matches.length === vals.length) {
-                for (let k = 0; k < matches.length; k++) {
-                    if (matches[k].length === vals[k]) {
-                        console.log(matches, mapCopy, vals);
-                    }
-                }
-            }
+    function permuteHelper(current, index) {
+        if (index === str.length) {
+            result.push(current);
+            return;
+        }
+
+        const char = str[index];
+        if (char === "?") {
+            permuteHelper(current + "#", index + 1);
+            permuteHelper(current + ".", index + 1);
+        } else {
+            permuteHelper(current + char, index + 1);
         }
     }
 
-    console.log(poss);
-    break;
+    permuteHelper("", 0);
+    return result;
 }
