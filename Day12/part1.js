@@ -8,14 +8,13 @@ let numOfArrangements = 0;
 
 for (const line of file) {
     let [map, vals] = line.split(" ");
-    vals = vals.split(",");
 
     const results = generatePermutations(map, 0, []);
 
     for (let r of results) {
-        let pairsOfHsh = r.match(new RegExp("#+", "g"));
-        let pairsOfAshAsNum = pairsOfHsh?.map((x) => x.length);
-        if (pairsOfAshAsNum?.toString() === vals.toString()) {
+        let pairsOfHash = r.match(new RegExp("#+", "g"));
+        let pairsOfHashAsNum = pairsOfHash?.map((x) => x.length);
+        if (pairsOfHashAsNum?.toString() === vals) {
             numOfArrangements++;
         }
     }
